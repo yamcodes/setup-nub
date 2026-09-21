@@ -172,6 +172,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: fixture pinned to 20 (input will request 22)
         shell: bash
+        # The provision step resolves the pin at the checkout root, where a
+        # consumer's pin lives — so the disagreeing .node-version must sit
+        # there too, not under a subdir.
         run: echo "20" > .node-version
       - uses: ./
         with:

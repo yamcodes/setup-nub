@@ -554,8 +554,9 @@ runs:
           pin_probe="$(mktemp -d "${RUNNER_TEMP:-/tmp}/nub-pin.XXXXXX")" || pin_probe=""
         fi
         if [ -n "$pin_probe" ]; then
-          # Explicit version is authoritative for PATH: resolve from a throwaway
-          # pin dir holding exactly `want`, in a subshell so cwd is undisturbed.
+          # Explicit version is authoritative for PATH and later nub: resolve
+          # from a throwaway pin dir holding exactly `want`, in a subshell so
+          # cwd is undisturbed.
           from_explicit=true
           printf '%s\n' "$want" > "$pin_probe/.node-version"
           resolved="$( (cd "$pin_probe" && nub node which) 2>"$why" || true)"
