@@ -177,12 +177,13 @@ jobs:
         # there too, not under a subdir.
         run: |
           echo "20" > .node-version
-          # A scripts entry so the same job can assert `nub run` (issue #12's repro),
-          # not only `nub <file>`.
-          printf '{ "name": "explicit-binds", "private": true, "scripts": { "ver": "node -p process.versions.node" } }\n' > package.json
+          # scripts.ver exercises `nub run` (issue #12's repro). packageManager
+          # lets the same job assert a shimmed npm runs on the bound Node.
+          printf '{ "name": "explicit-binds", "private": true, "packageManager": "npm@10.9.2", "scripts": { "ver": "node -p process.versions.node" } }\n' > package.json
       - uses: ./
         with:
           node-version: "22"
+          shim: true
       - name: later nub uses 22.x, not the committed 20 pin
         shell: bash
         run: |
@@ -199,6 +200,14 @@ jobs:
           path_nv="$(node -p 'process.versions.node' | tr -d '\r')"
           echo "PATH node: $path_nv"
           [[ "$path_nv" == 22.* ]] || { echo "::error::PATH node is $path_nv, expected 22.x"; exit 1; }
+          npm_path="$(command -v npm)"
+          echo "npm resolves to: $npm_path"
+          [[ "$npm_path" == *shims* ]] || { echo "::error::npm is not the nub shim: $npm_path"; exit 1; }
+          # Shimmed npm reports the Node it is running on. If the shim ignored
+          # NODE_EXECUTABLE and read the pin files, this would be 20.x.
+          shim_nv="$(npm version --json | node -p 'JSON.parse(require("fs").readFileSync(0,"utf8")).node' | tr -d '\r')"
+          echo "shimmed npm runs on Node $shim_nv"
+          [[ "$shim_nv" == 22.* ]] || { echo "::error::shimmed npm runs on Node $shim_nv, expected 22.x"; exit 1; }
           echo "explicit node-version binds later nub — OK"
 
   eager-provision:
