@@ -184,6 +184,9 @@ jobs:
         with:
           node-version: "22"
           shim: true
+          # packageManager on the fixture would auto-enable caching; this job
+          # is only about the NODE_EXECUTABLE bind.
+          package-manager-cache: false
       - name: later nub uses 22.x, not the committed 20 pin
         shell: bash
         run: |
