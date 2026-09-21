@@ -600,6 +600,10 @@ runs:
           which_dir="$(dirname "$resolved")"
           echo "$which_dir" >> "$GITHUB_PATH"
           echo "Fronting Node bin dir on PATH: $which_dir"
+        elif [ -n "$want" ]; then
+          # Explicit node-version[-file] requested, but the probe fell back to
+          # the host Node — the caller asked for a version we did not apply.
+          echo "::warning::node-version input (${want}) did not resolve to a nub-managed Node (host Node on PATH); nothing fronted and NODE_EXECUTABLE not set."
         else
           echo "No nub-managed Node resolved (host Node on PATH); not fronting a Node bin dir."
         fi
@@ -609,7 +613,8 @@ runs:
         # even when PATH already fronts a different Node. NODE_EXECUTABLE is nub's
         # per-job override and outranks pin files without rewriting them. Heredoc
         # form so a Windows path with backslashes cannot corrupt $GITHUB_ENV.
-        if [ "$from_explicit" = "true" ] && [ "$managed" = "true" ] && [ -n "$node_executable" ]; then
+        # `managed = true` already implies a non-empty resolved path.
+        if [ "$from_explicit" = "true" ] && [ "$managed" = "true" ]; then
           {
             echo "NODE_EXECUTABLE<<NUBEOF"
             printf '%s\n' "$node_executable"

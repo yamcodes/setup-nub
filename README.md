@@ -89,7 +89,7 @@ Accepted for setup-node compatibility but **ignored** (never errors): `check-lat
 
 ## Package-manager shims
 
-With `shim: true`, the action runs `nub pm shim` and puts the shim directory first on PATH. In a project that pins a package manager (`packageManager` or `devEngines.packageManager`), `npm`, `pnpm`, and `yarn` in later steps run that pinned version, provisioned on demand, the same job corepack does. In an unpinned project they fall through to the runner's own tool. The shims do not route those commands into Nub's own installer; use `nub install` for that.
+With `shim: true`, the action runs `nub pm shim` and puts the shim directory first on PATH. In a project that pins a package manager (`packageManager` or `devEngines.packageManager`), `npm`, `pnpm`, and `yarn` in later steps run that pinned version, provisioned on demand, the same job corepack does. In an unpinned project they fall through to the runner's own tool. The shims do not route those commands into Nub's own installer; use `nub install` for that. An explicit `node-version` / `node-version-file` still applies: those later steps inherit `NODE_EXECUTABLE`, so a shimmed `pnpm`/`npm`/`yarn` runs on the requested Node.
 
 ```yaml
 - uses: nubjs/setup-nub@v0

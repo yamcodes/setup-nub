@@ -175,7 +175,11 @@ jobs:
         # The provision step resolves the pin at the checkout root, where a
         # consumer's pin lives — so the disagreeing .node-version must sit
         # there too, not under a subdir.
-        run: echo "20" > .node-version
+        run: |
+          echo "20" > .node-version
+          # A scripts entry so the same job can assert `nub run` (issue #12's repro),
+          # not only `nub <file>`.
+          printf '{ "name": "explicit-binds", "private": true, "scripts": { "ver": "node -p process.versions.node" } }\n' > package.json
       - uses: ./
         with:
           node-version: "22"
@@ -189,6 +193,9 @@ jobs:
           nv="$(nub "$RUNNER_TEMP/nub-ver.js" | tr -d '\r' | tail -n1)"
           echo "nub ran Node $nv"
           [[ "$nv" == 22.* ]] || { echo "::error::nub ran Node $nv, expected 22.x (explicit node-version); the .node-version pin is 20"; exit 1; }
+          run_nv="$(nub run ver | tr -d '\r' | tail -n1)"
+          echo "nub run ver: $run_nv"
+          [[ "$run_nv" == 22.* ]] || { echo "::error::nub run used Node $run_nv, expected 22.x"; exit 1; }
           path_nv="$(node -p 'process.versions.node' | tr -d '\r')"
           echo "PATH node: $path_nv"
           [[ "$path_nv" == 22.* ]] || { echo "::error::PATH node is $path_nv, expected 22.x"; exit 1; }
